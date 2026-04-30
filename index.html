@@ -1,0 +1,795 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Academy | FY-2026 Pitch Deck</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --neon-cyan: #00f3ff;
+            --neon-magenta: #bc13fe;
+            --neon-pink: #ff007f;
+            --neon-gold: #ffcc00;
+            --dark-bg: #030305;
+            --glass-bg: rgba(10, 10, 15, 0.4);
+            --glass-border: rgba(0, 243, 255, 0.15);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            cursor: crosshair;
+        }
+
+        body {
+            background-color: var(--dark-bg);
+            color: #e0e0e0;
+            font-family: 'Rajdhani', sans-serif;
+            overflow-x: hidden;
+            background-image: 
+                linear-gradient(rgba(0, 243, 255, 0.015) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 243, 255, 0.015) 1px, transparent 1px);
+            background-size: 30px 30px;
+        }
+
+        #bg-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        h1, h2, h3, h4 {
+            font-family: 'Orbitron', sans-serif;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: #fff;
+        }
+
+        /* Glitch & Neon Effects */
+        .text-glow-cyan { text-shadow: 0 0 10px var(--neon-cyan), 0 0 20px var(--neon-cyan); color: var(--neon-cyan); }
+        .text-glow-pink { text-shadow: 0 0 10px var(--neon-pink), 0 0 20px var(--neon-pink); color: var(--neon-pink); }
+        .text-glow-gold { text-shadow: 0 0 10px var(--neon-gold), 0 0 20px var(--neon-gold); color: var(--neon-gold); }
+        
+        /* Liquid Glass UI */
+        .glass-panel {
+            background: var(--glass-bg);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5), inset 0 0 20px rgba(0, 243, 255, 0.05);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            height: 100%;
+        }
+
+        .glass-panel::before {
+            content: '';
+            position: absolute;
+            top: 0; left: -100%; width: 50%; height: 100%;
+            background: linear-gradient(to right, transparent, rgba(255,255,255,0.05), transparent);
+            transform: skewX(-25deg);
+            animation: shine 6s infinite;
+        }
+
+        @keyframes shine {
+            0% { left: -100%; }
+            20% { left: 200%; }
+            100% { left: 200%; }
+        }
+
+        .glass-panel:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.8), inset 0 0 20px rgba(0, 243, 255, 0.2);
+            border-color: var(--neon-cyan);
+        }
+
+        .glass-panel.gold-hover:hover {
+            border-color: var(--neon-gold);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.8), inset 0 0 20px rgba(255, 204, 0, 0.2);
+        }
+
+        /* Layout & Typography */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            position: relative;
+            z-index: 10;
+        }
+
+        section {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 6rem 0;
+            opacity: 0;
+            transform: translateY(40px);
+            transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+        }
+
+        section.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Hero Section */
+        .hero {
+            text-align: center;
+            position: relative;
+        }
+        .hero h1 {
+            font-size: 5rem;
+            font-weight: 900;
+            margin-bottom: 1rem;
+            background: linear-gradient(90deg, var(--neon-cyan), var(--neon-magenta));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: pulse-bg 3s infinite alternate;
+        }
+        .hero p {
+            font-size: 1.5rem;
+            color: #a0a0a0;
+            max-width: 800px;
+            margin: 0 auto 3rem auto;
+            font-weight: 500;
+        }
+
+        /* Grid Layouts */
+        .grid-3 {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 3rem;
+            align-items: stretch;
+        }
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 3rem;
+            align-items: center;
+        }
+
+        /* Metric Cards */
+        .metric-value {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 3rem;
+            font-weight: 700;
+            color: var(--neon-cyan);
+            margin: 1rem 0;
+        }
+
+        /* Graph Container */
+        .chart-container {
+            width: 100%;
+            height: 400px;
+            margin-top: 2rem;
+        }
+
+        /* Navigation Dots (Motion indicator) */
+        .scroll-indicator {
+            position: absolute;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 30px;
+            height: 50px;
+            border: 2px solid var(--neon-cyan);
+            border-radius: 15px;
+        }
+        .scroll-indicator::after {
+            content: '';
+            position: absolute;
+            top: 5px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 6px;
+            height: 10px;
+            background: var(--neon-cyan);
+            border-radius: 3px;
+            animation: scroll 1.5s infinite;
+        }
+
+        @keyframes scroll {
+            0% { top: 5px; opacity: 1; }
+            100% { top: 30px; opacity: 0; }
+        }
+
+        /* Tables */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+        th, td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            font-size: 1.2rem;
+        }
+        th {
+            color: var(--neon-magenta);
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1rem;
+        }
+        
+        .pillar-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+    </style>
+</head>
+<body>
+
+    <canvas id="bg-canvas"></canvas>
+
+    <div class="container">
+        <!-- HERO SECTION -->
+        <section class="hero visible" id="home">
+            <h3 class="text-glow-cyan" style="margin-bottom: 1rem;">PROJECT FY-2026</h3>
+            <h1>THE ELITE AI ACADEMY</h1>
+            <p>A world-class, hyper-reactive educational ecosystem in New Delhi. Forging the next generation of AI Engineers. High Margin. High Velocity. Unmatched Outcomes.</p>
+            
+            <div class="glass-panel" style="display: inline-block; padding: 1.5rem 3rem; height: auto;">
+                <h2 style="font-size: 1.8rem; color: #fff;">THE OBJECTIVE</h2>
+                <p style="font-size: 1.2rem; color: var(--neon-cyan); font-weight: bold; margin-top: 0.5rem;">Transform Raw Talent &rarr; AI Elite</p>
+            </div>
+            
+            <div class="scroll-indicator"></div>
+        </section>
+
+        <!-- THE ARCHITECTURE (CAPACITY) -->
+        <section id="architecture">
+            <h2 class="text-glow-cyan" style="font-size: 3rem; margin-bottom: 1rem;">SYSTEM ARCHITECTURE</h2>
+            <p style="font-size: 1.4rem; color: #aaa;">Optimized infrastructure for maximum throughput and asset utilization.</p>
+            
+            <div class="grid-3">
+                <div class="glass-panel">
+                    <h3 style="color: #fff;">Hardware Nodes</h3>
+                    <div class="metric-value">90</div>
+                    <p>High-end Custom PCs dedicated to heavy AI workloads and local LLM training. ₹75,000 per node.</p>
+                </div>
+                <div class="glass-panel">
+                    <h3 style="color: #fff;">Daily Batches</h3>
+                    <div class="metric-value">3</div>
+                    <p>Operating continuously: Morning, Afternoon, Evening. Maximizing physical footprint ROI.</p>
+                </div>
+                <div class="glass-panel">
+                    <h3 style="color: #fff;">Total Bandwidth</h3>
+                    <div class="metric-value">270</div>
+                    <p>Simultaneous active students in the system. Rolling monthly intake of 45 recruits.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- THE FOUNDERS (THE 3 PILLARS) -->
+        <section id="methodology">
+            <h2 class="text-glow-gold" style="font-size: 3rem; margin-bottom: 1rem; text-align: center;">THE FOUNDING TRIUMVIRATE</h2>
+            <p style="font-size: 1.4rem; color: #aaa; text-align: center; max-width: 900px; margin: 0 auto;">The academy is spearheaded by three visionary founders. Their distinct archetypes form the DNA of our institution, perfectly mapping the ancient trinity to modern AI engineering.</p>
+            
+            <div class="grid-3">
+                <!-- Brahma -->
+                <div class="glass-panel gold-hover">
+                    <div class="pillar-icon">🌌</div>
+                    <h3 class="text-glow-gold">BRAHMA</h3>
+                    <h4 style="color: #fff; margin: 0.5rem 0; font-size: 1.2rem;">THE CREATOR</h4>
+                    <p style="color: #888; margin-bottom: 1rem;"><strong>The Visionary Architect.</strong> Specializing in Generative Models and LLM Architecture.</p>
+                    <p>This founder embodies pure creation—forging zero-to-one innovations. They train students to breathe life into raw neural networks and build advanced foundation models entirely from scratch.</p>
+                </div>
+
+                <!-- Vishnu -->
+                <div class="glass-panel gold-hover">
+                    <div class="pillar-icon">🛡️</div>
+                    <h3 class="text-glow-cyan">VISHNU</h3>
+                    <h4 style="color: #fff; margin: 0.5rem 0; font-size: 1.2rem;">THE PRESERVER</h4>
+                    <p style="color: #888; margin-bottom: 1rem;"><strong>The Systems Guardian.</strong> Specializing in MLOps, Guardrails, and Enterprise Scaling.</p>
+                    <p>Intelligence without stability is chaos. Embodying preservation, this founder ensures our models remain robust, secure, and unbiased, teaching the art of maintaining massive AI ecosystems.</p>
+                </div>
+
+                <!-- Mahesh -->
+                <div class="glass-panel gold-hover">
+                    <div class="pillar-icon">⚡</div>
+                    <h3 class="text-glow-pink">MAHESH</h3>
+                    <h4 style="color: #fff; margin: 0.5rem 0; font-size: 1.2rem;">THE TRANSFORMER</h4>
+                    <p style="color: #888; margin-bottom: 1rem;"><strong>The Industry Disruptor.</strong> Specializing in Workflow Automation and Model Quantization.</p>
+                    <p>Shattering legacy systems to forge the new. This founder represents transformation, deploying highly optimized AI agents to aggressively disrupt and rebuild outdated business workflows.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- THE ECONOMICS (FINANCIALS) -->
+        <section id="economics">
+            <div class="grid-2">
+                <div>
+                    <h2 class="text-glow-pink" style="font-size: 3rem; margin-bottom: 1rem;">UNIT ECONOMICS</h2>
+                    <p style="font-size: 1.3rem; margin-bottom: 2rem; color: #aaa;">A highly lucrative, scalable financial model built on premium pricing and intensive value delivery.</p>
+                    
+                    <div class="glass-panel" style="margin-bottom: 1.5rem; height: auto;">
+                        <h3 style="color: var(--neon-cyan);">Student Value (Ticket Size)</h3>
+                        <div style="font-size: 2.5rem; font-weight: bold; font-family: 'Orbitron';">₹2,50,000</div>
+                        <p style="color: #888;">For the 6-month immersive diploma.</p>
+                    </div>
+
+                    <div class="glass-panel" style="height: auto;">
+                        <h3 style="color: var(--neon-pink);">Monthly Opex Load</h3>
+                        <div style="font-size: 2.5rem; font-weight: bold; font-family: 'Orbitron';">₹31.05L</div>
+                        <p style="color: #888;">Covers marketing, founders' payroll, 8,000 sq ft rent, power, and staff.</p>
+                    </div>
+                </div>
+                
+                <div class="glass-panel">
+                    <h3 style="text-align: center; margin-bottom: 1rem;">REVENUE VS PROFIT (FY-2026)</h3>
+                    <div class="chart-container">
+                        <canvas id="financialChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- EXECUTION PROTOCOL -->
+        <section id="execution">
+            <h2 class="text-glow-cyan" style="font-size: 3rem; margin-bottom: 2rem; text-align: center;">EXECUTION PROTOCOL & DEPLOYMENT</h2>
+            
+            <div class="grid-2" style="align-items: start;">
+                <!-- Capex Table -->
+                <div class="glass-panel" style="padding: 1.5rem; height: auto;">
+                    <h3 style="color: var(--neon-cyan); margin-bottom: 0.5rem; font-size: 1.3rem;">1. INITIAL CAP DEPLOYMENT</h3>
+                    <p style="color: #888; margin-bottom: 1.5rem; font-size: 0.9rem; font-style: italic;">(One-time setup cost before opening the doors)</p>
+                    <table style="font-size: 0.95rem;">
+                        <thead>
+                            <tr>
+                                <th>ITEM</th>
+                                <th>DETAILS</th>
+                                <th style="text-align: right;">AMOUNT (INR)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td style="font-weight: bold; color: #fff;">Interior & Air Conditioning</td>
+                                <td>Premium fit-out & heavy VRV cooling for 8,000 sq ft</td>
+                                <td style="text-align: right;">₹1,50,00,000</td>
+                            </tr>
+                            <tr>
+                                <td style="font-weight: bold; color: #fff;">90 AI Workstations</td>
+                                <td>Custom PCs @ ₹75,000 each</td>
+                                <td style="text-align: right;">₹67,50,000</td>
+                            </tr>
+                            <tr>
+                                <td style="font-weight: bold; color: #fff;">A/V Projectors</td>
+                                <td>3 High-end 4K Projectors @ ₹2,50,000 each</td>
+                                <td style="text-align: right;">₹7,50,000</td>
+                            </tr>
+                            <tr>
+                                <td style="font-weight: bold; color: #fff;">Power Infrastructure</td>
+                                <td>Heavy-duty UPS backup for 90 workstations</td>
+                                <td style="text-align: right;">₹6,50,000</td>
+                            </tr>
+                            <tr>
+                                <td style="font-weight: bold; color: #fff;">Enterprise Networking</td>
+                                <td>Commercial routers, switches, and firewall</td>
+                                <td style="text-align: right;">₹5,00,000</td>
+                            </tr>
+                            <tr>
+                                <td style="font-weight: bold; color: #fff;">Security & Compliance</td>
+                                <td>Biometric access, CCTV, and facility NOCs</td>
+                                <td style="text-align: right;">₹3,50,000</td>
+                            </tr>
+                            <tr style="border-top: 2px solid rgba(0, 243, 255, 0.5);">
+                                <td style="color: var(--neon-cyan); font-weight: bold;">TOTAL INITIAL DEPLOYMENT</td>
+                                <td style="color: var(--neon-cyan);">Complete physical and technical setup</td>
+                                <td style="color: var(--neon-cyan); font-weight: bold; text-align: right;">₹2,40,00,000</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Opex Table -->
+                <div class="glass-panel" style="padding: 1.5rem; height: auto;">
+                    <h3 style="color: var(--neon-pink); margin-bottom: 0.5rem; font-size: 1.3rem;">2. FIXED PER MONTH RUNNING COST</h3>
+                    <p style="color: #888; margin-bottom: 1.5rem; font-size: 0.9rem; font-style: italic;">(Updated fixed operational burn)</p>
+                    <table style="font-size: 0.95rem;">
+                        <thead>
+                            <tr>
+                                <th>ITEM</th>
+                                <th>DETAILS</th>
+                                <th style="text-align: right;">AMOUNT (INR)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td style="font-weight: bold; color: #fff;">Marketing Engine</td>
+                                <td>Meta/Google Ads to acquire 45 students monthly</td>
+                                <td style="text-align: right;">₹10,00,000</td>
+                            </tr>
+                            <tr>
+                                <td style="font-weight: bold; color: #fff;">Founders' Payroll</td>
+                                <td>The Triumvirate (3 Founders @ ₹3,00,000 each)</td>
+                                <td style="text-align: right;">₹9,00,000</td>
+                            </tr>
+                            <tr>
+                                <td style="font-weight: bold; color: #fff;">Electricity</td>
+                                <td>Commercial load for continuous AC and GPU usage</td>
+                                <td style="text-align: right;">₹4,00,000</td>
+                            </tr>
+                            <tr>
+                                <td style="font-weight: bold; color: #fff;">Junior Lab & Support Staff</td>
+                                <td>3 Lab Assistants, 1 Manager, Sales, & Cleaning</td>
+                                <td style="text-align: right;">₹4,00,000</td>
+                            </tr>
+                            <tr>
+                                <td style="font-weight: bold; color: #fff;">Commercial Rent</td>
+                                <td>8,000 sq ft facility</td>
+                                <td style="text-align: right;">₹3,50,000</td>
+                            </tr>
+                            <tr>
+                                <td style="font-weight: bold; color: #fff;">Internet & Maintenance</td>
+                                <td>Dedicated leased line and basic facility upkeep</td>
+                                <td style="text-align: right;">₹55,000</td>
+                            </tr>
+                            <tr style="border-top: 2px solid rgba(188, 19, 254, 0.5);">
+                                <td style="color: var(--neon-pink); font-weight: bold;">TOTAL MONTHLY RUNNING COST</td>
+                                <td style="color: var(--neon-pink);">New Recurring Operational Burn</td>
+                                <td style="color: var(--neon-pink); font-weight: bold; text-align: right;">₹31,05,000</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- FOOTER -->
+        <section id="footer" style="min-height: 40vh; text-align: center; justify-content: flex-end; padding-bottom: 2rem;">
+            <h1 class="text-glow-cyan" style="font-size: 4rem; opacity: 0.5;">INITIALIZE SYSTEM</h1>
+            <p style="color: #666; margin-top: 1rem;">PITCH DECK CONFIDENTIAL &bull; NEW DELHI</p>
+        </section>
+    </div>
+
+    <script>
+        // --- UI INTERSECTION OBSERVER ---
+        const sections = document.querySelectorAll('section');
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, { threshold: 0.15 });
+
+        sections.forEach(section => {
+            observer.observe(section);
+        });
+
+        // --- CHART.JS INITIALIZATION ---
+        const ctx = document.getElementById('financialChart').getContext('2d');
+        const gradientRev = ctx.createLinearGradient(0, 0, 0, 400);
+        gradientRev.addColorStop(0, 'rgba(0, 243, 255, 0.8)');
+        gradientRev.addColorStop(1, 'rgba(0, 243, 255, 0.1)');
+
+        const gradientProf = ctx.createLinearGradient(0, 0, 0, 400);
+        gradientProf.addColorStop(0, 'rgba(188, 19, 254, 0.8)');
+        gradientProf.addColorStop(1, 'rgba(188, 19, 254, 0.1)');
+
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ['Q1', 'Q2', 'Q3', 'Q4'],
+                datasets: [
+                    {
+                        label: 'Gross Revenue (₹ Crores)',
+                        data: [1.5, 3.38, 3.38, 3.38],
+                        backgroundColor: gradientRev,
+                        borderColor: '#00f3ff',
+                        borderWidth: 1,
+                        borderRadius: 4
+                    },
+                    {
+                        label: 'Net Profit (₹ Crores)',
+                        data: [0.5, 2.44, 2.44, 2.44],
+                        backgroundColor: gradientProf,
+                        borderColor: '#bc13fe',
+                        borderWidth: 1,
+                        borderRadius: 4
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                color: '#fff',
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: { color: 'rgba(255, 255, 255, 0.1)' },
+                        ticks: { color: '#aaa', font: { family: 'Rajdhani' } }
+                    },
+                    x: {
+                        grid: { display: false },
+                        ticks: { color: '#aaa', font: { family: 'Rajdhani', size: 14 } }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        labels: { color: '#fff', font: { family: 'Rajdhani', size: 14 } }
+                    }
+                }
+            }
+        });
+
+        // --- THREE.JS REACTIVE NEURO GLOBE ---
+        const canvas = document.getElementById('bg-canvas');
+        const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+        const scene = new THREE.Scene();
+        
+        // Camera setup
+        const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 2000);
+        camera.position.z = window.innerWidth < 768 ? 1300 : 850; 
+
+        const globeGroup = new THREE.Group();
+        scene.add(globeGroup);
+
+        const radius = 320;
+        const particleCount = 800;
+
+        // 1. Core Dark Sphere
+        const coreGeo = new THREE.SphereGeometry(radius - 2, 64, 64);
+        const coreMat = new THREE.MeshBasicMaterial({
+            color: 0x030305, 
+            transparent: true,
+            opacity: 0.95,
+            depthWrite: false
+        });
+        const coreSphere = new THREE.Mesh(coreGeo, coreMat);
+        globeGroup.add(coreSphere);
+
+        // 2. Atmospheric Cyber Glow
+        const atmosGeo = new THREE.SphereGeometry(radius + 15, 64, 64);
+        const atmosMat = new THREE.MeshBasicMaterial({
+            color: 0x00f3ff,
+            transparent: true,
+            opacity: 0.05,
+            side: THREE.BackSide,
+            blending: THREE.AdditiveBlending,
+            depthWrite: false
+        });
+        const atmosSphere = new THREE.Mesh(atmosGeo, atmosMat);
+        globeGroup.add(atmosSphere);
+
+        // 3. Neural Nodes
+        const positions = [];
+        for (let i = 0; i < particleCount; i++) {
+            const phi = Math.acos(-1 + (2 * i) / particleCount);
+            const theta = Math.sqrt(particleCount * Math.PI) * phi;
+            const r = radius + (Math.random() * 10 - 5);
+            
+            positions.push(
+                r * Math.cos(theta) * Math.sin(phi),
+                r * Math.sin(theta) * Math.sin(phi),
+                r * Math.cos(phi)
+            );
+        }
+
+        const pointGeo = new THREE.BufferGeometry();
+        pointGeo.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+
+        const canvasMap = document.createElement('canvas');
+        canvasMap.width = 32;
+        canvasMap.height = 32;
+        const ctxMap = canvasMap.getContext('2d');
+        const gradientMap = ctxMap.createRadialGradient(16, 16, 0, 16, 16, 16);
+        gradientMap.addColorStop(0, 'rgba(255,255,255,1)');
+        gradientMap.addColorStop(0.2, 'rgba(0, 243, 255, 1)');
+        gradientMap.addColorStop(1, 'rgba(0, 243, 255, 0)');
+        ctxMap.fillStyle = gradientMap;
+        ctxMap.fillRect(0, 0, 32, 32);
+        const dotTexture = new THREE.CanvasTexture(canvasMap);
+
+        const pointMat = new THREE.PointsMaterial({
+            color: 0xffffff,
+            size: 6,
+            map: dotTexture,
+            transparent: true,
+            blending: THREE.AdditiveBlending,
+            depthWrite: false
+        });
+        const points = new THREE.Points(pointGeo, pointMat);
+        globeGroup.add(points);
+
+        // 4. Neural Synapses
+        const linePositions = [];
+        for (let i = 0; i < particleCount; i++) {
+            const v1 = new THREE.Vector3(positions[i*3], positions[i*3+1], positions[i*3+2]);
+            let connections = 0;
+            for (let j = i + 1; j < particleCount; j++) {
+                const v2 = new THREE.Vector3(positions[j*3], positions[j*3+1], positions[j*3+2]);
+                if (v1.distanceTo(v2) < 55) { 
+                    linePositions.push(v1.x, v1.y, v1.z);
+                    linePositions.push(v2.x, v2.y, v2.z);
+                    connections++;
+                    if (connections > 4) break; 
+                }
+            }
+        }
+
+        const lineGeo = new THREE.BufferGeometry();
+        lineGeo.setAttribute('position', new THREE.Float32BufferAttribute(linePositions, 3));
+        const lineMat = new THREE.LineBasicMaterial({
+            color: 0xbc13fe, 
+            transparent: true,
+            opacity: 0.15,
+            blending: THREE.AdditiveBlending,
+            depthWrite: false
+        });
+        const lines = new THREE.LineSegments(lineGeo, lineMat);
+        globeGroup.add(lines);
+
+        // 5. FUTURISTIC DATA PLANES
+        const planes = [];
+        const planeColors = [0x00f3ff, 0xbc13fe, 0xffcc00, 0xffffff, 0x00f3ff];
+        
+        for (let i = 0; i < 7; i++) {
+            const orbitGroup = new THREE.Group();
+            orbitGroup.rotation.z = Math.random() * Math.PI * 2;
+            orbitGroup.rotation.x = Math.random() * Math.PI * 2;
+            
+            const flightGroup = new THREE.Group();
+            orbitGroup.add(flightGroup);
+            
+            const isClockwise = Math.random() > 0.5;
+            const flightSpeed = (0.0012 + Math.random() * 0.0015) * (isClockwise ? 1 : -1); 
+            
+            const planeGeo = new THREE.ConeGeometry(3, 14, 4);
+            planeGeo.scale(1.5, 1, 0.3);
+            planeGeo.rotateX(isClockwise ? -Math.PI / 2 : Math.PI / 2);
+            
+            const planeMat = new THREE.MeshBasicMaterial({
+                color: planeColors[i % planeColors.length],
+                transparent: true,
+                opacity: 0.9,
+                blending: THREE.AdditiveBlending,
+                wireframe: Math.random() > 0.5 
+            });
+            
+            const plane = new THREE.Mesh(planeGeo, planeMat);
+            const orbitRadius = radius + 35 + (Math.random() * 50);
+            plane.position.set(orbitRadius, 0, 0);
+            
+            flightGroup.add(plane);
+            
+            const trailGeo = new THREE.SphereGeometry(1.2, 8, 8);
+            const trailMat = new THREE.MeshBasicMaterial({ color: planeMat.color, transparent: true, opacity: 0.8 });
+            const trail = new THREE.Mesh(trailGeo, trailMat);
+            trail.position.set(orbitRadius, 0, isClockwise ? 7 : -7);
+            flightGroup.add(trail);
+
+            const pathPoints = [];
+            const pathColors = [];
+            const arcLength = Math.PI / 2.2; 
+            const arcSegments = 40;
+            const baseColor = new THREE.Color(planeMat.color);
+            
+            for(let j = 0; j <= arcSegments; j++) {
+                const angle = (j / arcSegments) * arcLength * (isClockwise ? 1 : -1);
+                pathPoints.push(Math.cos(angle) * orbitRadius, 0, Math.sin(angle) * orbitRadius);
+                
+                const fadeFactor = 1 - (j / arcSegments); 
+                pathColors.push(baseColor.r * fadeFactor, baseColor.g * fadeFactor, baseColor.b * fadeFactor);
+            }
+            
+            const pathGeo = new THREE.BufferGeometry();
+            pathGeo.setAttribute('position', new THREE.Float32BufferAttribute(pathPoints, 3));
+            pathGeo.setAttribute('color', new THREE.Float32BufferAttribute(pathColors, 3));
+            
+            const pathMat = new THREE.LineDashedMaterial({
+                vertexColors: true,
+                transparent: true,
+                opacity: 0.8,
+                dashSize: 3,
+                gapSize: 4,
+                blending: THREE.AdditiveBlending
+            });
+            const dottedPath = new THREE.Line(pathGeo, pathMat);
+            dottedPath.computeLineDistances(); 
+            flightGroup.add(dottedPath);
+
+            globeGroup.add(orbitGroup);
+            
+            planes.push({
+                flightGroup: flightGroup,
+                speed: flightSpeed,
+                trail: trail 
+            });
+        }
+
+        // 6. AMBIENT STARDUST
+        const starGeo = new THREE.BufferGeometry();
+        const starPositions = [];
+        for (let i = 0; i < 1500; i++) {
+            starPositions.push(
+                (Math.random() - 0.5) * 2500,
+                (Math.random() - 0.5) * 2500,
+                (Math.random() - 0.5) * 2500 - 500
+            );
+        }
+        starGeo.setAttribute('position', new THREE.Float32BufferAttribute(starPositions, 3));
+        const starMat = new THREE.PointsMaterial({
+            color: 0x00f3ff,
+            size: 1.5,
+            transparent: true,
+            opacity: 0.25,
+            blending: THREE.AdditiveBlending,
+            depthWrite: false
+        });
+        const stars = new THREE.Points(starGeo, starMat);
+        scene.add(stars);
+
+        // --- Interaction & Animation Loop ---
+        let currentScroll = window.scrollY;
+        let scrollVelocityY = 0;
+        
+        window.addEventListener('scroll', () => {
+            const newScroll = window.scrollY;
+            const delta = newScroll - currentScroll;
+            scrollVelocityY += delta * 0.0015; 
+            currentScroll = newScroll;
+        });
+
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            camera.position.z = window.innerWidth < 768 ? 1300 : 850;
+        });
+
+        const clock = new THREE.Clock();
+
+        function animateGlobe() {
+            requestAnimationFrame(animateGlobe);
+            const time = clock.getElapsedTime();
+
+            globeGroup.rotation.y += 0.001;
+            globeGroup.rotation.x += 0.0005;
+
+            globeGroup.rotation.x += scrollVelocityY;
+            globeGroup.rotation.y += scrollVelocityY * 0.5;
+            
+            scrollVelocityY *= 0.92;
+
+            lineMat.opacity = 0.12 + Math.sin(time * 2) * 0.08;
+
+            const atmosPulse = 1 + Math.sin(time * 1.5) * 0.015;
+            atmosSphere.scale.set(atmosPulse, atmosPulse, atmosPulse);
+
+            stars.rotation.y += 0.0003;
+            stars.rotation.x += 0.0001;
+
+            planes.forEach(p => {
+                p.flightGroup.rotation.y += p.speed;
+                p.flightGroup.rotation.z = Math.sin(time * 2 + p.speed * 1000) * 0.06; 
+                
+                p.trail.scale.setScalar(1 + Math.sin(time * 15 + p.speed * 1000) * 0.4);
+                p.trail.material.opacity = 0.4 + Math.sin(time * 15 + p.speed * 1000) * 0.3;
+            });
+
+            globeGroup.position.y = Math.sin(time * 0.5) * 15;
+
+            renderer.render(scene, camera);
+        }
+
+        animateGlobe();
+    </script>
+</body>
+</html>
